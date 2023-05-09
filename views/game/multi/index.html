@@ -64,6 +64,13 @@
     return isFind;
   }
 
+  const changeColor = (word) => {
+    words.map(w => {
+      if(w.word === word)
+        w.color = "#000";
+    })
+  }
+
   const clearBoard = () => {
     ctx.clearRect(0, 0, 1000, 500);
   }
@@ -85,7 +92,7 @@
   
   const receiveMsg = (e) =>{
     const msg = JSON.parse(e.data)
-    console.log(msg);
+//    console.log(msg);
     if(msg.room){    
       $chatLog.innerHTML += `${msg.room} - ${msg.nick} : ${msg.msg}\n` ;
       $chatLog.scrollTop = $chatLog.scrollHeight;
@@ -97,7 +104,10 @@
   ws.onmessage = receiveMsg;
 
   document.addEventListener('keyup', (e)=>{
-    if(e.key == "Enter") myMsgSend();
+    if(e.key == "Enter") {
+      changeColor($myMsg.value);
+      myMsgSend();
+    }
   })
 
 </script>
