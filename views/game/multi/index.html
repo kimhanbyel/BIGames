@@ -3,10 +3,10 @@
 {% block mid %} 
 
 <div class="grid grid-cols-4">
-  <div class="p-2 h-auto border-slate-200 bg-slate-500 col-span-2">
-    <canvas id="board"></canvas>
+  <div class="p-2 h-auto border-slate-200 bg-slate-500 col-span-3">
+    <canvas class="border-solid border-2 border-white-300" id="board"></canvas>
   </div>
-  <div class="p-2 h-auto border-black bg-slate-300 col-span-2">
+  <div class="p-2 h-auto border-black bg-slate-300 col-span-1">
     {% if user %}
     <div>
       <select id="room">
@@ -15,102 +15,14 @@
         <option>2</option>
         <option>3</option>
       </select>
-      <label id="myNick">{{user.nick}}</label>
+      <input type="hidden" id="myNick" value="{{user.nick}}"></input>
       <input id="myMsg" type="text">
-      <button onclick="myMsgSend()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full">전송</button>
     </div>
     {% endif %}
     <div>전체 채팅방</div>
     <textarea readonly id="chat-log" style="height:400px; width:100%"></textarea>
   </div>
 </div>
-<script>
-  const ws = new WebSocket("ws://localhost:3001");
-  const $myRoom = document.querySelector('#room');
-  const $myNick = document.querySelector('#myNick');
-  const $myMsg = document.querySelector('#myMsg');
-  const $chatLog = document.querySelector('#chat-log');
-  const $cvs = document.querySelector('#board');
-  $cvs.width = 1000;
-  $cvs.height = 500;
-
-  const ctx = $cvs.getContext('2d');
-  ctx.font = "bold 20px Arial, sans-serif";
-
-  class Word {
-    constructor(word, x, y, color){
-      this.word = word;
-      this.x = x;
-      this.y = y;
-      this.color = color;
-    }
-    draw(ctx){  
-      ctx.fillStyle = this.color;
-      ctx.fillText(this.word, this.x , this.y);
-    }
-    down(){
-      this.y += 20;
-    }
-  }
-
-  const words = [];
-
-  const findWord = (word) => {
-    let isFind = false;
-    words.map(w =>{
-      if(word === w.word)  isFind = true;
-      else            return false;
-    })
-    return isFind;
-  }
-
-  const changeColor = (word) => {
-    words.map(w => {
-      if(w.word === word)
-        w.color = "#000";
-    })
-  }
-
-  const clearBoard = () => {
-    ctx.clearRect(0, 0, 1000, 500);
-  }
-  
-
-  setInterval(() => {
-    clearBoard();
-    words.map(w=>{
-      w.draw(ctx);
-      w.down();
-    })
-  }, 1000);
-  
-  const myMsgSend = () =>{
-    const myMsg = {room : $myRoom.value, nick : $myNick.innerHTML, msg : $myMsg.value};
-    ws.send(JSON.stringify(myMsg));
-    $myMsg.value="";
-  }
-  
-  const receiveMsg = (e) =>{
-    const msg = JSON.parse(e.data)
-//    console.log(msg);
-    if(msg.room){    
-      $chatLog.innerHTML += `${msg.room} - ${msg.nick} : ${msg.msg}\n` ;
-      $chatLog.scrollTop = $chatLog.scrollHeight;
-    }
-    else
-      words.push(new Word(msg.word, Math.floor(Math.random()*500), 20, "#ddd"));
-
-  }
-  ws.onmessage = receiveMsg;
-
-  document.addEventListener('keyup', (e)=>{
-    if(e.key == "Enter") {
-      changeColor($myMsg.value);
-      myMsgSend();
-    }
-  })
-
-</script>
-
+<script src="/static/scripts/acid_rain.js" type="module"></script>
 
 {% endblock %}

@@ -1,14 +1,14 @@
 const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({port : 3001});
 
-const data1 = ["김","박","신","이", "가", "조", "전", "정","지", "장", "표", "남", "문", "윤", "최", "강"];
-const data2 = ["한","희","동","정", "성", "원", "강", "혜","다", "준", "선", "휘", "세", "진", "태", '재'];
-const data3 = ["별","진","민","찬", "필", "재", "빈", "찬","빈", "혁", "호", "성", "빈", "영", "균", '현'];
+const data1 = ["김","박","신","이", "가", "조", "정", "지", "장"];
+const data2 = ["한","희","동","정", "성", "원", "강", "혜", "다", "준", "선", "휘", "세", "진", "태", '재'];
+const data3 = ["별","진","민","찬", "필", "재", "빈", "찬", "빈", "혁", "호", "성", "빈", "영", "균", '현'];
 
 const randomWord = () => {
   let a = Math.floor(Math.random()*data1.length);
-  let b = Math.floor(Math.random()*data1.length);
-  let c = Math.floor(Math.random()*data1.length);
+  let b = Math.floor(Math.random()*data2.length);
+  let c = Math.floor(Math.random()*data3.length);
   return data1[a] + data2[b] + data3[c];
 }
 

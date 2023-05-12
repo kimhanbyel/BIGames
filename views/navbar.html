@@ -16,6 +16,7 @@
         </div>
         <div class="ml-4 flex items-center md:ml-6">
           {%if user %}
+            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">{{user.nick}}</a>
             <button class="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full" onclick="location.href='/auth/signOut'">
               Sign out
             </button>
