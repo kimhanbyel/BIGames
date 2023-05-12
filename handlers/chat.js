@@ -28,10 +28,9 @@ wss.on("connection", ws =>{
   }, 1000);
   
   ws.on("message", data =>{
-    ws.room = JSON.parse(data).room;
+    ws.color = JSON.parse(data).color;
     for(client of wss.clients){
-      if(ws.room === client.room)
-        client.send(data.toString());
+      client.send(data.toString());
     }
   });
 });  

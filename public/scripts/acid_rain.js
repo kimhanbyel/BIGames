@@ -1,5 +1,5 @@
 const ws = new WebSocket("ws://localhost:3001");
-const $myRoom = document.querySelector('#room');
+const $myColor = document.querySelector('#color');
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
@@ -28,17 +28,16 @@ class Word {
 
 const words = [];
 
-const changeColor = (word) => {
+const changeColor = (word, color) => {
   words.map(w => {
-    if(w.word === word)
-      w.color = "#000";
+    if(w.word === word && w.color === '#ddd')
+      w.color = color;
   })
 }
 
 const clearBoard = () => {
   ctx.clearRect(0, 0, 1000, 500);
 }
-
 
 setInterval(() => {
   clearBoard();
@@ -51,7 +50,7 @@ setInterval(() => {
 }, 1000);
 
 const myMsgSend = () =>{
-  const myMsg = {room : $myRoom.value, nick : $myNick.value, msg : $myMsg.value};
+  const myMsg = {color : $myColor.value, nick : $myNick.value, msg : $myMsg.value};
   ws.send(JSON.stringify(myMsg));
   $myMsg.value="";
 }
@@ -59,8 +58,8 @@ const myMsgSend = () =>{
 const receiveMsg = (e) =>{
   const msg = JSON.parse(e.data)
 //    console.log(msg);
-  if(msg.room){
-    changeColor(msg.msg);    
+  if(msg.color){
+    changeColor(msg.msg, msg.color);    
     $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
     $chatLog.scrollTop = $chatLog.scrollHeight;
   }
