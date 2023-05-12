@@ -1,9 +1,13 @@
-const wss = require('./chat');
+const wss = require('./acidRain');
 
-const index = (req, res) => {
-  res.render("game/multi/index.html", {user : req.session.user});
+const acidRain = (req, res) => {
+  res.render("games/acidRain/index.html", {user : req.session.user});
 }
 
+const tetris = (req, res)=>{ 
+  res.render('games/tetris/index.html', {user : req.session.user})}
+
 module.exports = {
-  index,
+  acidRain,
+  tetris,
 }

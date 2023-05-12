@@ -18,7 +18,6 @@ app.use(express.urlencoded({extended:true}));
 
 app.get('/', (req, res)=>{res.render('index.html', {user : req.session.user});});
 app.use('/auth', authRouter);
-app.use('/game', gameRouter);
-
+app.use('/games', gameRouter);
 
 app.listen(3000);
