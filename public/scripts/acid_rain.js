@@ -1,3 +1,4 @@
+window.gameIsReady = false;
 const ws = new WebSocket("ws://localhost:3001");
 const $myColor = document.querySelector('#color');
 const $myNick = document.querySelector('#myNick');
@@ -39,18 +40,25 @@ const clearBoard = () => {
   ctx.clearRect(0, 0, 1000, 500);
 }
 
-setInterval(() => {
-  clearBoard();
-  words.map(w=>{
-    w.draw(ctx);
-    w.down();
-  })
-  if(words.length >=15)
-    words.shift();
-}, 1000);
+window.gameReady = () => {
+  window.gameIsReady = true;
+  myMsgSend();
+}
+
+const gameStart = () => {
+  setInterval(() => {
+    clearBoard();
+    words.map(w=>{
+      w.draw(ctx);
+      w.down();
+    })
+    if(words.length >=15)
+      words.shift();
+  }, 1000);
+}
 
 const myMsgSend = () =>{
-  const myMsg = {color : $myColor.value, nick : $myNick.value, msg : $myMsg.value};
+  const myMsg = {color : $myColor.value, nick : $myNick.value, msg : $myMsg.value, ready : window.gameIsReady};
   ws.send(JSON.stringify(myMsg));
   $myMsg.value="";
 }
@@ -76,3 +84,5 @@ document.addEventListener('keyup', (e)=>{
   }
 })
 
+
+gameStart();

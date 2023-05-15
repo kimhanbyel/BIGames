@@ -1,6 +1,8 @@
 const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({port : 3001});
 
+wss.isNotGeneratingWord = true;
+
 const data1 = ["김","박","신","이", "가", "조", "정", "지", "장"];
 const data2 = ["한","희","동","정", "성", "원", "강", "혜", "다", "준", "선", "휘", "세", "진", "태", '재'];
 const data3 = ["별","진","민","찬", "필", "재", "빈", "찬", "빈", "혁", "호", "성", "빈", "영", "균", '현'];
@@ -21,21 +23,28 @@ setInterval(() => {
 wss.on("connection", ws =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
-
-  setInterval(() => {
-    //console.log(global.randWord);
-    ws.send(JSON.stringify(global.randWord));
-  }, 1000);
   
   ws.on("message", data =>{
-    ws.color = JSON.parse(data).color;
+    const dataJson = JSON.parse(data);
+    ws.ready = dataJson.ready;
+    let readyCnt = 0;
     for(client of wss.clients){
+      if (client.ready) readyCnt++;
       client.send(data.toString());
+    }
+    if(readyCnt === wss.clients.size && wss.isNotGeneratingWord){
+      setInterval(() => {
+        for(client of wss.clients)
+          client.send(JSON.stringify(global.randWord));
+      }, 1000);
+      wss.isNotGeneratingWord = false;
     }
   });
 });  
 
 module.exports = wss;
+
+// 단어 색을 바꾸는 과정
 // 1. 단어를 입력하고 엔터
 // 2. words 단어가 존재하는지 확인
 // 3. 존재하면 5번으로 가
@@ -44,3 +53,13 @@ module.exports = wss;
 // 6. 서버가 받은 단어를 모든 클라이언트로 보내
 // 7. 각 클라이언트들은 words 단어가 존재하는지 확인
 // 8. 색을 바꾸면 끝.
+
+
+
+
+// *****2명의 사용자의 게임이 동시에 시작되도록 하는 과정*****
+// 1. 2명의 모두 준비가 되어 있는지 확인
+//    1) 클라이언트에서 준비버튼을 클릭하면 서버로 정보를 송신
+//    2) 2명에게 준비 신호를 받았는지 확인
+//    3) 모두 확인되면 2번으로, 그렇지 않으면 대기
+// 2. 서버에서 클라이언트로 단어를 송신
