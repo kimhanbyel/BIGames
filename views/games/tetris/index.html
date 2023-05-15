@@ -1,38 +1,6 @@
 {% extends "index.html" %}  
 
 {% block mid %} 
-<style>
-  body{
-    background-color:#737373;
-  }
-  *{
-    margin:0;
-    padding:0;
-  }
-  .canvas_wrap{
-    display:block;
-    margin:0 auto;
-    padding-top:25px;
-  }
-  .canvas_wrap>*{
-    display:block;
-    margin:0 auto;
-    border: 1px solid #ffffff;
-  }
-  .canvas_wrap>button{
-    font-family:Courier;
-    font-size:30px;
-    font-weight:bold;
-    border:none;
-    background-color:#ffffff;
-    color:#000000;
-  }
-</style>
-
-<div class="canvas_wrap">
-  <canvas id="tetris" width="240" height="400"></canvas>
-  <button type="button" id="start_game">Start</button>
-</div>
-
-<script type="text/javascript" src="/static/scripts/tetris_single.js"></script>
+<div class="container p-2 h-auto border-solid border-2 bg-slate-500" id="tetris"></div>
+<script type="module" src="/static/scripts/tetris.js"></script>
 {% endblock %}
