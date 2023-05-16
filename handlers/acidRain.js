@@ -14,12 +14,6 @@ const randomWord = () => {
   return data1[a] + data2[b] + data3[c];
 }
 
-global.randWord = '';
-
-setInterval(() => {
-  global.randWord = { word : randomWord()};
-}, 1000);
-
 wss.on("connection", ws =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
@@ -34,6 +28,7 @@ wss.on("connection", ws =>{
     }
     if(readyCnt === wss.clients.size && wss.isNotGeneratingWord){
       setInterval(() => {
+        const randWord = { word : randomWord()};
         for(client of wss.clients)
           client.send(JSON.stringify(randWord));
       }, 1000);

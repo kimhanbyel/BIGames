@@ -3,6 +3,7 @@ import ScoreBoard from './scoreBoard.js';
 
 window.gameIsReady = false;
 window.gameIsNotStart = true;
+window.myScore = 0;
 
 const ws = new WebSocket("ws://localhost:3001");
 const $myColor = document.querySelector('#color');
@@ -25,6 +26,8 @@ const changeColor = (word, color) => {
   words.map(w => {
     if(w.word === word && w.color === '#ddd')
       w.color = color;
+    if(w.word === word && color ===  $myColor.value)
+      window.myScore += 10;
   })
 }
 
@@ -51,8 +54,13 @@ const gameStart = () => {
 }
 
 const myMsgSend = (msg = $myMsg.value ) =>{
-  const myMsg = {color : $myColor.value, nick : $myNick.value, msg : msg , ready : window.gameIsReady};
-  ws.send(JSON.stringify(myMsg));
+  const myMsg = { color : $myColor.value, 
+                  nick : $myNick.value, 
+                  msg : msg , 
+                  ready : window.gameIsReady,
+                  score : window.myScore,
+                }; 
+                ws.send(JSON.stringify(myMsg));
   $myMsg.value="";
 }
 
@@ -60,9 +68,14 @@ const receiveMsg = (e) =>{
   const msg = JSON.parse(e.data)
 //    console.log(msg);
   if(msg.msg){
+    console.log(msg);
     changeColor(msg.msg, msg.color);    
     $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
     $chatLog.scrollTop = $chatLog.scrollHeight;
+    if(msg.ready && sb.players.filter(p=>p.nick === msg.nick).length === 0){
+      sb.players.push(msg);
+      sb.draw(ctx);
+    }
   }
   else{
     words.push(new Word(msg.word, Math.floor(Math.random()*800), 20, "#ddd"));
