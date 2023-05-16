@@ -35,7 +35,7 @@ wss.on("connection", ws =>{
     if(readyCnt === wss.clients.size && wss.isNotGeneratingWord){
       setInterval(() => {
         for(client of wss.clients)
-          client.send(JSON.stringify(global.randWord));
+          client.send(JSON.stringify(randWord));
       }, 1000);
       wss.isNotGeneratingWord = false;
     }
@@ -44,7 +44,7 @@ wss.on("connection", ws =>{
 
 module.exports = wss;
 
-// 단어 색을 바꾸는 과정
+// ******단어 색을 바꾸는 과정*****
 // 1. 단어를 입력하고 엔터
 // 2. words 단어가 존재하는지 확인
 // 3. 존재하면 5번으로 가
@@ -53,8 +53,6 @@ module.exports = wss;
 // 6. 서버가 받은 단어를 모든 클라이언트로 보내
 // 7. 각 클라이언트들은 words 단어가 존재하는지 확인
 // 8. 색을 바꾸면 끝.
-
-
 
 
 // *****2명의 사용자의 게임이 동시에 시작되도록 하는 과정*****
