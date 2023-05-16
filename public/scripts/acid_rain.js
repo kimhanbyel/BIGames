@@ -22,13 +22,22 @@ sb.draw(ctx);
 
 const words = [];
 
-const changeColor = (word, color) => {
-  words.map(w => {
+// const changeColor = (word, color) => {
+//   words.map(w => {
+//     if(w.word === word && w.color === '#ddd')
+//       w.color = color;
+//     if(w.word === word && color ===  $myColor.value)
+//       window.myScore += 10;
+//   })
+// }
+
+const findWord = (word) => {
+  let foundWord = null;
+  words.map(w =>{
     if(w.word === word && w.color === '#ddd')
-      w.color = color;
-    if(w.word === word && color ===  $myColor.value)
-      window.myScore += 10;
+      foundWord = w;
   })
+  return foundWord;
 }
 
 const clearBoard = () => {
@@ -60,7 +69,7 @@ const myMsgSend = (msg = $myMsg.value ) =>{
                   ready : window.gameIsReady,
                   score : window.myScore,
                 }; 
-                ws.send(JSON.stringify(myMsg));
+  ws.send(JSON.stringify(myMsg));
   $myMsg.value="";
 }
 
@@ -69,13 +78,27 @@ const receiveMsg = (e) =>{
 //    console.log(msg);
   if(msg.msg){
     console.log(msg);
-    changeColor(msg.msg, msg.color);    
+    const foundWord = findWord(msg.msg);
+    if(foundWord)
+      foundWord.color = msg.color;
+    if(foundWord && (msg.nick === $myNick.value)){
+      window.myScore += 10;
+      myMsgSend('딩동뎅');
+    }  
+
     $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
     $chatLog.scrollTop = $chatLog.scrollHeight;
-    if(msg.ready && sb.players.filter(p=>p.nick === msg.nick).length === 0){
+
+    if(!msg.ready) return;
+    
+    const alreadyExistPlayer = sb.players.filter(p=>p.nick === msg.nick);
+    if(alreadyExistPlayer.length === 0){
       sb.players.push(msg);
       sb.draw(ctx);
+      return;
     }
+    alreadyExistPlayer[0].score = msg.score;
+    sb.draw(ctx);
   }
   else{
     words.push(new Word(msg.word, Math.floor(Math.random()*800), 20, "#ddd"));
@@ -90,7 +113,8 @@ ws.onmessage = receiveMsg;
 
 document.addEventListener('keyup', (e)=>{
   if(e.key == "Enter") {
-    myMsgSend();
+    if($myMsg.value.trim().length > 0)
+      myMsgSend();
   }
 })
 
