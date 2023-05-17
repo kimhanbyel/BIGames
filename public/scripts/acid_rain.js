@@ -95,7 +95,7 @@ const receiveMsg = (e) =>{
   }
   else if(msg.bangJang){
     $startBtn.type = 'button';
-    $startBtn.value = "시작";
+    $startBtn.value = "Start";
     $startBtn.style = 'cursor:pointer;';
   }
   else{
