@@ -2,6 +2,7 @@ const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({port : 3001});
 
 wss.isNotGeneratingWord = true;
+wss.isNotDecideBangJang = true;
 
 const randomColor = () => {
   const HEX = '0123456789ABCDEF';
@@ -26,7 +27,7 @@ const randomWord = () => {
 wss.on("connection", ws =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
-  
+    
   if(ws.color === undefined)
     ws.color = randomColor();
   
@@ -41,7 +42,20 @@ wss.on("connection", ws =>{
       client.send(JSON.stringify(dataJson));
     }
     
-    if(readyCnt === wss.clients.size && wss.isNotGeneratingWord){
+    if(readyCnt === wss.clients.size && wss.isNotDecideBangJang){
+      const bangJangNum = Math.floor(Math.random() * wss.clients.size);
+      let cnt = 0;
+      for(client of wss.clients){
+        if(cnt === bangJangNum){
+          client.send(JSON.stringify({bangJang : true}));
+          break;
+        }
+        cnt++;
+      }
+      wss.isNotDecideBangJang = false;
+    }
+    
+    if(dataJson.bangJang && wss.isNotGeneratingWord){
       setInterval(() => {
         const randWord = { word : randomWord()};
         for(client of wss.clients)

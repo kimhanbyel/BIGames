@@ -8,7 +8,7 @@ grant all privileges on tetris_online.* to 'tetris_online'@'%';
 
 CREATE TABLE users (
   idUsers       INT NOT NULL AUTO_INCREMENT,
-  id            VARCHAR(20) NOT NULL,
+  id            VARCHAR(50) NOT NULL,
   nick          VARCHAR(30) NOT NULL,
   pw            VARCHAR(30) NOT NULL,
   joinDate      TIMESTAMP NOT NULL,

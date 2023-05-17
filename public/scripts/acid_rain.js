@@ -10,6 +10,8 @@ const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
 const $cvs = document.querySelector('#board');
+const $startBtn = document.querySelector('#start');
+
 $cvs.width = 890+235;
 $cvs.height = 400;
 
@@ -75,9 +77,10 @@ const receiveMsg = (e) =>{
       window.myScore += 10;
       myMsgSend('딩동뎅');
     }  
-
-    $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
-    $chatLog.scrollTop = $chatLog.scrollHeight;
+    if(msg.msg !=='딩동뎅'){    
+      $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
+      $chatLog.scrollTop = $chatLog.scrollHeight;
+    }
 
     if(!msg.ready) return;
     
@@ -90,6 +93,11 @@ const receiveMsg = (e) =>{
     alreadyExistPlayer[0].score = msg.score;
     sb.draw(ctx);
   }
+  else if(msg.bangJang){
+    $startBtn.type = 'button';
+    $startBtn.value = "시작";
+    $startBtn.style = 'cursor:pointer;';
+  }
   else{
     words.push(new Word(msg.word, Math.floor(Math.random()*800), 20, "#ddd"));
     if(window.gameIsNotStart){
@@ -100,6 +108,10 @@ const receiveMsg = (e) =>{
 
 }
 ws.onmessage = receiveMsg;
+
+window.bangJangStart = () => {
+  ws.send(JSON.stringify({bangJang : true}));
+}
 
 document.addEventListener('keyup', (e)=>{
   if(e.key == "Enter") {
