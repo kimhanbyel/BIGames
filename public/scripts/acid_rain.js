@@ -6,7 +6,6 @@ window.gameIsNotStart = true;
 window.myScore = 0;
 
 const ws = new WebSocket("ws://localhost:3001");
-const $myColor = document.querySelector('#color');
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
@@ -21,15 +20,6 @@ const sb = new ScoreBoard(915, 10, 200, 380);
 sb.draw(ctx);
 
 const words = [];
-
-// const changeColor = (word, color) => {
-//   words.map(w => {
-//     if(w.word === word && w.color === '#ddd')
-//       w.color = color;
-//     if(w.word === word && color ===  $myColor.value)
-//       window.myScore += 10;
-//   })
-// }
 
 const findWord = (word) => {
   let foundWord = null;
@@ -63,7 +53,7 @@ const gameStart = () => {
 }
 
 const myMsgSend = (msg = $myMsg.value ) =>{
-  const myMsg = { color : $myColor.value, 
+  const myMsg = { color : null, 
                   nick : $myNick.value, 
                   msg : msg , 
                   ready : window.gameIsReady,

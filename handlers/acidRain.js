@@ -3,6 +3,15 @@ const wss = new WebSocketServer({port : 3001});
 
 wss.isNotGeneratingWord = true;
 
+const randomColor = () => {
+  const HEX = '0123456789ABCDEF';
+  
+  let color = '#';
+  for(let i=0; i<3; i++)
+    color += HEX[Math.floor(Math.random() * HEX.length)];
+  return color;
+}
+
 const data1 = ["김","박","신","이", "가", "조", "정", "지", "장"];
 const data2 = ["한","희","동","정", "성", "원", "강", "혜", "다", "준", "선", "휘", "세", "진", "태", '재'];
 const data3 = ["별","진","민","찬", "필", "재", "빈", "찬", "빈", "혁", "호", "성", "빈", "영", "균", '현'];
@@ -18,14 +27,20 @@ wss.on("connection", ws =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
   
+  if(ws.color === undefined)
+    ws.color = randomColor();
+  
   ws.on("message", data =>{
     const dataJson = JSON.parse(data);
     ws.ready = dataJson.ready;
+    
     let readyCnt = 0;
     for(client of wss.clients){
+      if (client === ws) dataJson.color = ws.color;
       if (client.ready) readyCnt++;
-      client.send(data.toString());
+      client.send(JSON.stringify(dataJson));
     }
+    
     if(readyCnt === wss.clients.size && wss.isNotGeneratingWord){
       setInterval(() => {
         const randWord = { word : randomWord()};

@@ -9,11 +9,6 @@
   <div class="p-2 h-auto border-black bg-slate-300 col-span-1">
     {% if user %}
     <div>
-      <select id="color">
-        <option class="bg-orange-400" value="orange" selected>오렌지</option>
-        <option class="bg-sky-400" value="cyan">파랑</option>
-        <option class="bg-red-400" value="red">빨강</option>
-      </select>
       <input type="hidden" id="myNick" value="{{user.nick}}"></input>
       <input class="border-solid border-4 border-sky-300" id="myMsg" type="text">
       <button id="ready" type="button" class="p-2 text-black bg-yellow-400 rounded-full" onclick="window.gameReady()">준비</button>
