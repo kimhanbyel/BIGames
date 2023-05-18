@@ -5,12 +5,14 @@ window.gameIsReady = false;
 window.gameIsNotStart = true;
 window.myScore = 0;
 window.myColor = '';
+window.timer = null;
 
 const ws = new WebSocket("ws://localhost:3001");
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
 const $cvs = document.querySelector('#board');
+const $readyBtn = document.querySelector('#ready');
 const $startBtn = document.querySelector('#start');
 
 $cvs.width = 890+235;
@@ -37,13 +39,8 @@ const clearBoard = () => {
   ctx.clearRect(0, 0, $cvs.width, $cvs.height);
 }
 
-window.gameReady = () => {
-  window.gameIsReady = true;
-  myMsgSend("ready", "준비");
-}
-
 const gameStart = () => {
-  setInterval(() => {
+  window.timer = setInterval(() => {
     clearBoard();
     sb.draw(ctx);
     words.map(w=>{
@@ -67,7 +64,13 @@ const myMsgSend = (code = 'common', msg = $myMsg.value ) =>{
   $myMsg.value="";
 }
 
-const functionAtReceiveCode = {
+const functionByMsgCode = {
+  'bangJang' : (msg) => {
+    $startBtn.type = 'button';
+    $startBtn.value = "Start";
+    $startBtn.style = 'cursor:pointer;';
+  },
+
   'common' : (msg) => {
     $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
     $chatLog.scrollTop = $chatLog.scrollHeight;
@@ -78,6 +81,10 @@ const functionAtReceiveCode = {
       window.myScore += 10;
       myMsgSend('correct', msg.msg);
     }  
+  },
+
+  'color' : (msg) => {
+    window.myColor = msg.color;  
   },
 
   'correct' : (msg) => {
@@ -93,14 +100,6 @@ const functionAtReceiveCode = {
     sb.draw(ctx);
   },
 
-  'color' : (msg) => {
-    window.myColor = msg.color;  
-  },
-
-  'word' : (msg) => {
-    words.push(new Word(msg.word, Math.floor(Math.random()*800), 20, "#ddd"));
-  },
-
   'start' : (msg) => {
     if(window.gameIsNotStart){
       gameStart();
@@ -108,21 +107,26 @@ const functionAtReceiveCode = {
     }
   },
 
-  'bangJang' : (msg) => {
-    $startBtn.type = 'button';
-    $startBtn.value = "Start";
-    $startBtn.style = 'cursor:pointer;';
+  'word' : (msg) => {
+    words.push(new Word(msg.word, Math.floor(Math.random()*800), 20, "#ddd"));
   },
 }
 
 const receiveMsg = (e) =>{
   const msg = JSON.parse(e.data)
-  functionAtReceiveCode[msg.code](msg);
+  console.log(msg);
+  functionByMsgCode[msg.code](msg);
 }
 
 ws.onmessage = receiveMsg;
 
+window.gameReady = () => {
+  $readyBtn.style.display = 'none';
+  myMsgSend("ready", "준비");
+}
+
 window.bangJangStart = () => {
+  $startBtn.style.display = 'none';
   myMsgSend('start', '시작');
 }
 

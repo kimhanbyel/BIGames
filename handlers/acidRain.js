@@ -3,10 +3,10 @@ const wss = new WebSocketServer({port : 3001});
 
 wss.isNotGeneratingWord = true;
 wss.isNotDecideBangJang = true;
+wss.readyCnt = 0;
 
 const randomColor = () => {
   const HEX = '789ABCDEF';
-  
   let color = '#';
   for(let i=0; i<3; i++)
     color += HEX[Math.floor(Math.random() * HEX.length)];
@@ -24,6 +24,36 @@ const randomWord = () => {
   return data1[a] + data2[b] + data3[c];
 }
 
+const functionByMsgCode = {
+  'ready' : (wss, ws) => { 
+    wss.readyCnt++; 
+    if(wss.readyCnt === wss.clients.size && wss.isNotDecideBangJang){
+      const bangJangNum = Math.floor(Math.random() * wss.clients.size);
+      let cnt = 0;
+      for(client of wss.clients){
+        if(cnt === bangJangNum){
+          client.send(JSON.stringify({code : 'bangJang'}));
+          break;
+        }
+        cnt++;
+      }
+      wss.isNotDecideBangJang = false;
+    }    
+  },
+  'start' : (wss, ws) => { 
+    wss.timer = setInterval(() => {
+      const randWord = { code : 'word', word : randomWord()};
+      for(client of wss.clients)
+        client.send(JSON.stringify(randWord));
+    }, 1000);
+  },
+  'bangJang' : (wss, ws) => {},
+  'common'   : (wss, ws) => {},
+  'color' : (wss, ws) => {},
+  'correct' : (wss, ws) => {},
+  'word' : (wss, ws) => {},
+}
+
 wss.on("connection", ws =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
@@ -36,39 +66,17 @@ wss.on("connection", ws =>{
     clearInterval(wss.timer);
     wss.isNotGeneratingWord = true;
     wss.isNotDecideBangJang = true;
+    wss.readyCnt = 0;
   }) 
 
   ws.on("message", data =>{
     const dataJson = JSON.parse(data);
     console.log(dataJson);
-    if(dataJson.code == 'ready') ws.ready ='ready';
     
-    let readyCnt = 0;
+    functionByMsgCode[dataJson.code](wss, ws);
+
     for(client of wss.clients){
-      if (client.ready) readyCnt++;
       client.send(JSON.stringify(dataJson));
-    }
-    
-    if(readyCnt === wss.clients.size && wss.isNotDecideBangJang){
-      const bangJangNum = Math.floor(Math.random() * wss.clients.size);
-      let cnt = 0;
-      for(client of wss.clients){
-        if(cnt === bangJangNum){
-          client.send(JSON.stringify({code : 'bangJang'}));
-          break;
-        }
-        cnt++;
-      }
-      wss.isNotDecideBangJang = false;
-    }
-    
-    if(dataJson.code === 'start' && wss.isNotGeneratingWord){
-      wss.timer = setInterval(() => {
-        const randWord = { code : 'word', word : randomWord()};
-        for(client of wss.clients)
-          client.send(JSON.stringify(randWord));
-      }, 1000);
-      wss.isNotGeneratingWord = false;
     }
   });
 });  
