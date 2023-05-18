@@ -4,6 +4,7 @@ import ScoreBoard from './scoreBoard.js';
 window.gameIsReady = false;
 window.gameIsNotStart = true;
 window.myScore = 0;
+window.myColor = '';
 
 const ws = new WebSocket("ws://localhost:3001");
 const $myNick = document.querySelector('#myNick');
@@ -38,7 +39,7 @@ const clearBoard = () => {
 
 window.gameReady = () => {
   window.gameIsReady = true;
-  myMsgSend("준비");
+  myMsgSend("ready", "준비");
 }
 
 const gameStart = () => {
@@ -54,63 +55,75 @@ const gameStart = () => {
   }, 1000);
 }
 
-const myMsgSend = (msg = $myMsg.value ) =>{
-  const myMsg = { color : null, 
+const myMsgSend = (code = 'common', msg = $myMsg.value ) =>{
+  const myMsg = { 
+                  code : code,
+                  color : window.myColor, 
                   nick : $myNick.value, 
                   msg : msg , 
-                  ready : window.gameIsReady,
                   score : window.myScore,
                 }; 
   ws.send(JSON.stringify(myMsg));
   $myMsg.value="";
 }
 
-const receiveMsg = (e) =>{
-  const msg = JSON.parse(e.data)
-//    console.log(msg);
-  if(msg.msg){
-    console.log(msg);
+const functionAtReceiveCode = {
+  'common' : (msg) => {
+    $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
+    $chatLog.scrollTop = $chatLog.scrollHeight;
     const foundWord = findWord(msg.msg);
     if(foundWord)
       foundWord.color = msg.color;
     if(foundWord && (msg.nick === $myNick.value)){
       window.myScore += 10;
-      myMsgSend('딩동뎅');
+      myMsgSend('correct', msg.msg);
     }  
-    if(msg.msg !=='딩동뎅'){    
-      $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
-      $chatLog.scrollTop = $chatLog.scrollHeight;
-    }
+  },
 
-    if(!msg.ready) return;
-    
+  'correct' : (msg) => {
     const alreadyExistPlayer = sb.players.filter(p=>p.nick === msg.nick);
-    if(alreadyExistPlayer.length === 0){
-      sb.players.push(msg);
+    if(alreadyExistPlayer){
+      alreadyExistPlayer[0].score = msg.score;
       sb.draw(ctx);
-      return;
     }
-    alreadyExistPlayer[0].score = msg.score;
+  },
+
+  'ready' : (msg) => {
+    sb.players.push(msg);
     sb.draw(ctx);
-  }
-  else if(msg.bangJang){
-    $startBtn.type = 'button';
-    $startBtn.value = "Start";
-    $startBtn.style = 'cursor:pointer;';
-  }
-  else{
+  },
+
+  'color' : (msg) => {
+    window.myColor = msg.color;  
+  },
+
+  'word' : (msg) => {
     words.push(new Word(msg.word, Math.floor(Math.random()*800), 20, "#ddd"));
+  },
+
+  'start' : (msg) => {
     if(window.gameIsNotStart){
       gameStart();
       window.gameIsNotStart = false;
     }
-  }
+  },
 
+  'bangJang' : (msg) => {
+    $startBtn.type = 'button';
+    $startBtn.value = "Start";
+    $startBtn.style = 'cursor:pointer;';
+  },
 }
+
+const receiveMsg = (e) =>{
+  const msg = JSON.parse(e.data)
+  functionAtReceiveCode[msg.code](msg);
+}
+
 ws.onmessage = receiveMsg;
 
 window.bangJangStart = () => {
-  ws.send(JSON.stringify({bangJang : true}));
+  myMsgSend('start', '시작');
 }
 
 document.addEventListener('keyup', (e)=>{

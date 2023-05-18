@@ -5,7 +5,7 @@ wss.isNotGeneratingWord = true;
 wss.isNotDecideBangJang = true;
 
 const randomColor = () => {
-  const HEX = '0123456789ABCDEF';
+  const HEX = '789ABCDEF';
   
   let color = '#';
   for(let i=0; i<3; i++)
@@ -27,17 +27,24 @@ const randomWord = () => {
 wss.on("connection", ws =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
-    
-  if(ws.color === undefined)
-    ws.color = randomColor();
+  ws.send(JSON.stringify({code : 'color', color : randomColor()}))
   
+  ws.on("close", () => {
+    console.log("연결이 끊어졌습니다.");
+    if(wss.clients.size) return;
+    
+    clearInterval(wss.timer);
+    wss.isNotGeneratingWord = true;
+    wss.isNotDecideBangJang = true;
+  }) 
+
   ws.on("message", data =>{
     const dataJson = JSON.parse(data);
-    ws.ready = dataJson.ready;
+    console.log(dataJson);
+    if(dataJson.code == 'ready') ws.ready ='ready';
     
     let readyCnt = 0;
     for(client of wss.clients){
-      if (client === ws) dataJson.color = ws.color;
       if (client.ready) readyCnt++;
       client.send(JSON.stringify(dataJson));
     }
@@ -47,7 +54,7 @@ wss.on("connection", ws =>{
       let cnt = 0;
       for(client of wss.clients){
         if(cnt === bangJangNum){
-          client.send(JSON.stringify({bangJang : true}));
+          client.send(JSON.stringify({code : 'bangJang'}));
           break;
         }
         cnt++;
@@ -55,9 +62,9 @@ wss.on("connection", ws =>{
       wss.isNotDecideBangJang = false;
     }
     
-    if(dataJson.bangJang && wss.isNotGeneratingWord){
-      setInterval(() => {
-        const randWord = { word : randomWord()};
+    if(dataJson.code === 'start' && wss.isNotGeneratingWord){
+      wss.timer = setInterval(() => {
+        const randWord = { code : 'word', word : randomWord()};
         for(client of wss.clients)
           client.send(JSON.stringify(randWord));
       }, 1000);
