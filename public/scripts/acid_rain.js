@@ -1,11 +1,7 @@
+'use strict'
 import Word from './word.js';
 import ScoreBoard from './scoreBoard.js';
-
-window.gameIsReady = false;
-window.gameIsNotStart = true;
-window.myScore = 0;
-window.myColor = '';
-window.timer = null;
+import TimeBar from './timeBar.js';
 
 const ws = new WebSocket("ws://localhost:3001");
 const $myNick = document.querySelector('#myNick');
@@ -16,15 +12,26 @@ const $readyBtn = document.querySelector('#ready');
 const $startBtn = document.querySelector('#start');
 
 $cvs.width = 890+235;
-$cvs.height = 400;
+$cvs.height = 430;
 
 const ctx = $cvs.getContext('2d');
 ctx.font = "bold 20px Arial, sans-serif";
 const sb = new ScoreBoard(915, 10, 200, 380);
-
-sb.draw(ctx);
+const tb = new TimeBar(10, $cvs.height-30, $cvs.width-20, 20, "pink");
 
 const words = [];
+
+const init = () => {
+  sb.init();
+  window.gameIsReady = false;
+  window.gameIsNotStart = true;
+  window.myScore = 0;
+  window.myColor = '';
+  window.timer = null;
+};
+
+init();
+
 
 const findWord = (word) => {
   let foundWord = null;
@@ -43,13 +50,21 @@ const gameStart = () => {
   window.timer = setInterval(() => {
     clearBoard();
     sb.draw(ctx);
+    tb.w-=1;
+    tb.draw(ctx);
+    if(tb.w == 0) myMsgSend('end', '종료');
     words.map(w=>{
       w.draw(ctx);
-      w.down();
     })
     if(words.length >=15)
       words.shift();
-  }, 1000);
+  }, 100);
+
+  window.WordDownTimer = setInterval(() => {
+    words.map(w=>{
+      w.down();
+    })
+  }, 1000)
 }
 
 const myMsgSend = (code = 'common', msg = $myMsg.value ) =>{
@@ -93,6 +108,14 @@ const functionByMsgCode = {
       alreadyExistPlayer[0].score = msg.score;
       sb.draw(ctx);
     }
+  },
+
+  'end' : (msg) => {
+    init();
+    clearInterval(window.timer);
+    clearInterval(window.WordDownTimer);
+    sb.players=[];
+    $readyBtn.style.display = 'block';
   },
 
   'ready' : (msg) => {

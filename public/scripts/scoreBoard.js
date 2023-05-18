@@ -14,6 +14,9 @@ class ScoreBoard {
       ctx.fillText(`${p.nick} : ${p.score}` , this.x+10 , this.y+30+i*20);
     })
   }
+  init(){
+    this.players = [];
+  }
 }
 
 export default ScoreBoard;

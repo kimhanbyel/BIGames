@@ -1,9 +1,14 @@
 const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({port : 3001});
 
-wss.isNotGeneratingWord = true;
-wss.isNotDecideBangJang = true;
-wss.readyCnt = 0;
+
+const init = () => {
+  wss.isNotGeneratingWord = true;
+  wss.isNotDecideBangJang = true;
+  wss.readyCnt = 0;  
+}
+
+init();
 
 const randomColor = () => {
   const HEX = '789ABCDEF';
@@ -40,6 +45,7 @@ const functionByMsgCode = {
       wss.isNotDecideBangJang = false;
     }    
   },
+  
   'start' : (wss, ws) => { 
     wss.timer = setInterval(() => {
       const randWord = { code : 'word', word : randomWord()};
@@ -47,10 +53,15 @@ const functionByMsgCode = {
         client.send(JSON.stringify(randWord));
     }, 1000);
   },
+
   'bangJang' : (wss, ws) => {},
   'common'   : (wss, ws) => {},
   'color' : (wss, ws) => {},
   'correct' : (wss, ws) => {},
+  'end' : (wss, ws) => {
+    clearInterval(wss.timer);
+    init();
+  },
   'word' : (wss, ws) => {},
 }
 
@@ -64,9 +75,7 @@ wss.on("connection", ws =>{
     if(wss.clients.size) return;
     
     clearInterval(wss.timer);
-    wss.isNotGeneratingWord = true;
-    wss.isNotDecideBangJang = true;
-    wss.readyCnt = 0;
+    init();
   }) 
 
   ws.on("message", data =>{
