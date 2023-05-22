@@ -23,11 +23,13 @@ const words = [];
 
 const init = () => {
   sb.init();
+  tb.init($cvs.width-20);
   window.gameIsReady = false;
   window.gameIsNotStart = true;
   window.myScore = 0;
   window.myColor = '';
   window.timer = null;
+  $readyBtn.style.display = 'inline-block';
 };
 
 init();
@@ -50,9 +52,10 @@ const gameStart = () => {
   window.timer = setInterval(() => {
     clearBoard();
     sb.draw(ctx);
-    tb.w-=1;
+    tb.w-=10;
     tb.draw(ctx);
-    if(tb.w == 0) myMsgSend('end', '종료');
+    if(tb.w <= 0) 
+      myMsgSend('end', '종료');
     words.map(w=>{
       w.draw(ctx);
     })
@@ -111,11 +114,11 @@ const functionByMsgCode = {
   },
 
   'end' : (msg) => {
-    init();
     clearInterval(window.timer);
     clearInterval(window.WordDownTimer);
-    sb.players=[];
-    $readyBtn.style.display = 'block';
+    sb.sort();
+    sb.draw(ctx);
+    init();
   },
 
   'ready' : (msg) => {
@@ -145,6 +148,8 @@ ws.onmessage = receiveMsg;
 
 window.gameReady = () => {
   $readyBtn.style.display = 'none';
+  clearBoard();
+  words.length = 0;
   myMsgSend("ready", "준비");
 }
 
