@@ -85,7 +85,7 @@ wss.on("connection", ws =>{
     functionByMsgCode[dataJson.code](wss, ws);
 
     for(client of wss.clients){
-      client.send(JSON.stringify(dataJson));
+        client.send(JSON.stringify(dataJson));
     }
   });
 });  

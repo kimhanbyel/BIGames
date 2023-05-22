@@ -3,7 +3,7 @@ import Word from './word.js';
 import ScoreBoard from './scoreBoard.js';
 import TimeBar from './timeBar.js';
 
-const ws = new WebSocket("ws://localhost:3001");
+const ws = new WebSocket("ws://10.94.121.10:3001");
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
@@ -20,14 +20,13 @@ const sb = new ScoreBoard(915, 10, 200, 380);
 const tb = new TimeBar(10, $cvs.height-30, $cvs.width-20, 20, "pink");
 
 const words = [];
+window.color = undefined;
 
 const init = () => {
-  sb.init();
   tb.init($cvs.width-20);
   window.gameIsReady = false;
   window.gameIsNotStart = true;
   window.myScore = 0;
-  window.myColor = '';
   window.timer = null;
   $readyBtn.style.display = 'inline-block';
 };
@@ -119,6 +118,7 @@ const functionByMsgCode = {
     sb.sort();
     sb.draw(ctx);
     init();
+    if(msg.nick === $myNick.value) sb.init();
   },
 
   'ready' : (msg) => {
