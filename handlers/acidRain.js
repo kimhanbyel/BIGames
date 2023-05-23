@@ -1,6 +1,6 @@
 const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({port : 3001});
-
+const TIMEOUT = 10*1000;
 
 const init = () => {
   wss.isNotGeneratingWord = true;
@@ -30,7 +30,8 @@ const randomWord = () => {
 }
 
 const functionByMsgCode = {
-  'ready' : (wss, ws) => { 
+  'ready' : (wss, ws, data) => {
+    data.score = 0; 
     wss.readyCnt++; 
     if(wss.readyCnt === wss.clients.size && wss.isNotDecideBangJang){
       const bangJangNum = Math.floor(Math.random() * wss.clients.size);
@@ -46,23 +47,30 @@ const functionByMsgCode = {
     }    
   },
   
-  'start' : (wss, ws) => { 
+  'start' : (wss, ws, data) => { 
     wss.timer = setInterval(() => {
-      const randWord = { code : 'word', word : randomWord()};
+      const randWord = { code : 'word', word : randomWord() };
       for(client of wss.clients)
         client.send(JSON.stringify(randWord));
     }, 1000);
+    
+    setTimeout(() => {
+      for(client of wss.clients)
+        client.send(JSON.stringify({code : 'end', msg : '끝'}));
+
+      clearInterval(wss.timer);
+      init();
+    }, TIMEOUT);
+    
+    data.timeout = TIMEOUT;
   },
 
-  'bangJang' : (wss, ws) => {},
-  'common'   : (wss, ws) => {},
-  'color' : (wss, ws) => {},
-  'correct' : (wss, ws) => {},
-  'end' : (wss, ws) => {
-    clearInterval(wss.timer);
-    init();
-  },
-  'word' : (wss, ws) => {},
+  'bangJang'  : (wss, ws, data) => {},
+  'common'    : (wss, ws, data) => {},
+  'color'     : (wss, ws, data) => {},
+  'correct'   : (wss, ws, data) => {},
+  'countDown' : (wss, ws, data) => {},
+  'word'      : (wss, ws, data) => {},
 }
 
 wss.on("connection", ws =>{
@@ -80,9 +88,10 @@ wss.on("connection", ws =>{
 
   ws.on("message", data =>{
     const dataJson = JSON.parse(data);
-    console.log(dataJson);
     
-    functionByMsgCode[dataJson.code](wss, ws);
+    functionByMsgCode[dataJson.code](wss, ws, dataJson);
+ 
+    console.log(dataJson);
 
     for(client of wss.clients){
         client.send(JSON.stringify(dataJson));

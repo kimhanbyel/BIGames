@@ -1,3 +1,5 @@
+import { BASIC_FONT_STYLE } from './global_variable.js';
+
 class ScoreBoard {
   constructor(x, y, w, h){
     this.x = x;
@@ -7,11 +9,12 @@ class ScoreBoard {
     this.players = [];
   }
   draw(ctx){
+    ctx.font = BASIC_FONT_STYLE;
     ctx.fillStyle = "black";
     ctx.fillRect(this.x, this.y, this.w, this.h);
     this.players.map((p, i)=>{
       ctx.fillStyle = p.color;
-      ctx.fillText(`${p.nick} : ${p.score}` , this.x+10 , this.y+30+i*20);
+      ctx.fillText(`${p.nick.substr(0,3)} : ${p.score}` , this.x+10 , this.y+30+i*20);
     })
   }
   init(){

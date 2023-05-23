@@ -2,6 +2,7 @@
 import Word from './word.js';
 import ScoreBoard from './scoreBoard.js';
 import TimeBar from './timeBar.js';
+import { BASIC_FONT_STYLE, COUNT_DOWN_FONT_STYLE } from './global_variable.js';
 
 const ws = new WebSocket("ws://10.94.121.10:3001");
 const $myNick = document.querySelector('#myNick');
@@ -15,7 +16,7 @@ $cvs.width = 890+235;
 $cvs.height = 430;
 
 const ctx = $cvs.getContext('2d');
-ctx.font = "bold 20px Arial, sans-serif";
+ctx.font = BASIC_FONT_STYLE;
 const sb = new ScoreBoard(915, 10, 200, 380);
 const tb = new TimeBar(10, $cvs.height-30, $cvs.width-20, 20, "pink");
 
@@ -24,6 +25,7 @@ window.color = undefined;
 
 const init = () => {
   tb.init($cvs.width-20);
+  window.isBangJang = false;
   window.gameIsReady = false;
   window.gameIsNotStart = true;
   window.myScore = 0;
@@ -47,14 +49,13 @@ const clearBoard = () => {
   ctx.clearRect(0, 0, $cvs.width, $cvs.height);
 }
 
-const gameStart = () => {
+const gameStart = (timeout) => {
+  const d = tb.w * 100 / timeout;
   window.timer = setInterval(() => {
     clearBoard();
     sb.draw(ctx);
-    tb.w-=10;
+    tb.w -= d;
     tb.draw(ctx);
-    if(tb.w <= 0) 
-      myMsgSend('end', '종료');
     words.map(w=>{
       w.draw(ctx);
     })
@@ -86,10 +87,11 @@ const functionByMsgCode = {
     $startBtn.type = 'button';
     $startBtn.value = "Start";
     $startBtn.style = 'cursor:pointer;';
+    window.isBangJang = true;
   },
 
   'common' : (msg) => {
-    $chatLog.innerHTML += `${msg.nick} : ${msg.msg}\n` ;
+    $chatLog.innerHTML += `${msg.nick.substr(0, 3)} : ${msg.msg.substr(0,15)}\n` ;
     $chatLog.scrollTop = $chatLog.scrollHeight;
     const foundWord = findWord(msg.msg);
     if(foundWord)
@@ -111,24 +113,42 @@ const functionByMsgCode = {
       sb.draw(ctx);
     }
   },
+  'countDown' : (msg) => {
+    let cnt = 5;
+    const countDownTimer = setInterval(() => {
+      clearBoard();
+      sb.draw(ctx);
+      ctx.font = COUNT_DOWN_FONT_STYLE;
+      ctx.fillStyle = '#ddd';
+      ctx.fillText(`${cnt}` , 890/2  , 430/2);
+      cnt--;
+      if(cnt < 0) {
+        clearInterval(countDownTimer);
+        ctx.font = BASIC_FONT_STYLE;
+        if(window.isBangJang)
+          myMsgSend("start", "시작");
+      }
+    }, 1000);
+  },
 
   'end' : (msg) => {
     clearInterval(window.timer);
     clearInterval(window.WordDownTimer);
     sb.sort();
     sb.draw(ctx);
+    sb.init();
     init();
-    if(msg.nick === $myNick.value) sb.init();
   },
 
   'ready' : (msg) => {
+    window.myScore = msg.score;
     sb.players.push(msg);
     sb.draw(ctx);
   },
 
   'start' : (msg) => {
     if(window.gameIsNotStart){
-      gameStart();
+      gameStart(msg.timeout);
       window.gameIsNotStart = false;
     }
   },
@@ -138,7 +158,7 @@ const functionByMsgCode = {
   },
 }
 
-const receiveMsg = (e) =>{
+const receiveMsg = (e) => {
   const msg = JSON.parse(e.data)
   console.log(msg);
   functionByMsgCode[msg.code](msg);
@@ -150,12 +170,13 @@ window.gameReady = () => {
   $readyBtn.style.display = 'none';
   clearBoard();
   words.length = 0;
+  window.myScore = 0;
   myMsgSend("ready", "준비");
 }
 
 window.bangJangStart = () => {
   $startBtn.style.display = 'none';
-  myMsgSend('start', '시작');
+  myMsgSend('countDown', '카운트다운');
 }
 
 document.addEventListener('keyup', (e)=>{
