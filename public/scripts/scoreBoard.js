@@ -21,7 +21,6 @@ class ScoreBoard {
     this.players = [];
   }
   sort(){
-    console.log(this.players);
     this.players.sort((a, b) => { return b.score - a.score;});
   }
 }

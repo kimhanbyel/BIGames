@@ -5,7 +5,9 @@ const TIMEOUT = 10*1000;
 const init = () => {
   wss.isNotGeneratingWord = true;
   wss.isNotDecideBangJang = true;
-  wss.readyCnt = 0;  
+  wss.readyCnt = 0;
+  wss.players = [];
+  wss.bangJang = null;  
 }
 
 init();
@@ -29,15 +31,33 @@ const randomWord = () => {
   return data1[a] + data2[b] + data3[c];
 }
 
+const isExistNick = nick => wss.players.filter(p => p.nick == nick);
+
+
 const functionByMsgCode = {
   'ready' : (wss, ws, data) => {
-    data.score = 0; 
-    wss.readyCnt++; 
+    data.score = 0;
+    console.log(wss.bangJang);
+    if(wss.bangJang == ws.id)
+      ws.send(JSON.stringify({code : 'bangJang'}));
+
+    if(isExistNick(data.nick).length > 0){
+      data.players = wss.players;
+      return 
+    }
+
+    wss.players.push({nick : data.nick, 
+                      color : data.color,
+                      score : data.score, })
+    data.players = wss.players;
+    
+    wss.readyCnt++;   
     if(wss.readyCnt === wss.clients.size && wss.isNotDecideBangJang){
       const bangJangNum = Math.floor(Math.random() * wss.clients.size);
       let cnt = 0;
       for(client of wss.clients){
         if(cnt === bangJangNum){
+          wss.bangJang = client.id;
           client.send(JSON.stringify({code : 'bangJang'}));
           break;
         }

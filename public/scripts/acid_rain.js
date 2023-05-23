@@ -4,7 +4,8 @@ import ScoreBoard from './scoreBoard.js';
 import TimeBar from './timeBar.js';
 import { BASIC_FONT_STYLE, COUNT_DOWN_FONT_STYLE } from './global_variable.js';
 
-const ws = new WebSocket("ws://10.94.121.10:3001");
+//const ws = new WebSocket("ws://10.94.121.10:3001");
+const ws = new WebSocket("ws://localhost:3001");
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
@@ -140,9 +141,16 @@ const functionByMsgCode = {
     init();
   },
 
+  
+  'error' : (msg) => {
+    $chatLog.innerHTML += `이미 존재하는 닉네임입니다.\n` ;
+    $chatLog.scrollTop = $chatLog.scrollHeight;
+  },
+  
+  
   'ready' : (msg) => {
     window.myScore = msg.score;
-    sb.players.push(msg);
+    sb.players = msg.players;
     sb.draw(ctx);
   },
 
