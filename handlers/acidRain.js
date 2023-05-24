@@ -2,12 +2,16 @@ const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({port : 3001});
 const TIMEOUT = 10*1000;
 
+const bangJangInit = () => {
+  wss.isNotDecideBangJang = true;
+  wss.bangJang = null;  
+}
+
 const init = () => {
   wss.isNotGeneratingWord = true;
-  wss.isNotDecideBangJang = true;
   wss.readyCnt = 0;
   wss.players = [];
-  wss.bangJang = null;  
+  bangJangInit();
 }
 
 init();
@@ -33,38 +37,37 @@ const randomWord = () => {
 
 const isExistNick = nick => wss.players.filter(p => p.nick == nick);
 
+const bangJangPick = () => {
+  if(wss.readyCnt >= wss.clients.size && wss.isNotDecideBangJang){
+    const bangJangNum = Math.floor(Math.random() * wss.clients.size);
+    let cnt = 0;
+    for(client of wss.clients){
+      if(cnt === bangJangNum){
+        wss.bangJang = client;
+        client.send(JSON.stringify({code : 'bangJang'}));
+        break;
+      }
+      cnt++;
+    }
+    wss.isNotDecideBangJang = false;
+  }    
+}
+
 
 const functionByMsgCode = {
   'ready' : (wss, ws, data) => {
     data.score = 0;
-    console.log(wss.bangJang);
-    if(wss.bangJang == ws.id)
-      ws.send(JSON.stringify({code : 'bangJang'}));
 
     if(isExistNick(data.nick).length > 0){
       data.players = wss.players;
-      return 
+      return;
     }
 
-    wss.players.push({nick : data.nick, 
-                      color : data.color,
-                      score : data.score, })
+    wss.players.push({nick : data.nick, color : data.color, score : data.score, })
     data.players = wss.players;
-    
     wss.readyCnt++;   
-    if(wss.readyCnt === wss.clients.size && wss.isNotDecideBangJang){
-      const bangJangNum = Math.floor(Math.random() * wss.clients.size);
-      let cnt = 0;
-      for(client of wss.clients){
-        if(cnt === bangJangNum){
-          wss.bangJang = client.id;
-          client.send(JSON.stringify({code : 'bangJang'}));
-          break;
-        }
-        cnt++;
-      }
-      wss.isNotDecideBangJang = false;
-    }    
+
+    bangJangPick();
   },
   
   'start' : (wss, ws, data) => { 
@@ -93,28 +96,38 @@ const functionByMsgCode = {
   'word'      : (wss, ws, data) => {},
 }
 
-wss.on("connection", ws =>{
+wss.on("connection", (ws) =>{
   console.log(`연결되었습니다.`);
   console.log(wss.clients.size);
   ws.send(JSON.stringify({code : 'color', color : randomColor()}))
-  
+
   ws.on("close", () => {
     console.log("연결이 끊어졌습니다.");
-    if(wss.clients.size) return;
-    
+    if(wss.bangJang == ws){
+      console.log('방장이 나갔습니다.');
+      bangJangInit();
+      bangJangPick();
+    }
+
+//    wss.players = wss.players.filter(p => { if(p.ws != ws) return p; })
+//    wss.players.map(p => p.send(JSON.stringify({code : 'ready', players : wss.players})));
+  
+    if(wss.clients.size) return;  
+
     clearInterval(wss.timer);
     init();
+
   }) 
 
   ws.on("message", data =>{
     const dataJson = JSON.parse(data);
     
     functionByMsgCode[dataJson.code](wss, ws, dataJson);
- 
+
     console.log(dataJson);
 
     for(client of wss.clients){
-        client.send(JSON.stringify(dataJson));
+      client.send(JSON.stringify(dataJson));
     }
   });
 });  
@@ -138,3 +151,7 @@ module.exports = wss;
 //    2) 2명에게 준비 신호를 받았는지 확인
 //    3) 모두 확인되면 2번으로, 그렇지 않으면 대기
 // 2. 서버에서 클라이언트로 단어를 송신
+
+
+
+

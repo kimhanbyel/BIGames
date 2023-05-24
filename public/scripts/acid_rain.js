@@ -4,8 +4,8 @@ import ScoreBoard from './scoreBoard.js';
 import TimeBar from './timeBar.js';
 import { BASIC_FONT_STYLE, COUNT_DOWN_FONT_STYLE } from './global_variable.js';
 
-//const ws = new WebSocket("ws://10.94.121.10:3001");
-const ws = new WebSocket("ws://localhost:3001");
+const ws = new WebSocket("ws://10.94.121.10:3001");
+//const ws = new WebSocket("ws://localhost:3001");
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');
@@ -23,6 +23,7 @@ const tb = new TimeBar(10, $cvs.height-30, $cvs.width-20, 20, "pink");
 
 const words = [];
 window.color = undefined;
+window.isNotEndGame = true;
 
 const init = () => {
   tb.init($cvs.width-20);
@@ -137,6 +138,7 @@ const functionByMsgCode = {
     clearInterval(window.WordDownTimer);
     sb.sort();
     sb.draw(ctx);
+    window.isNotEndGame = false;
     sb.init();
     init();
   },
@@ -176,6 +178,7 @@ ws.onmessage = receiveMsg;
 
 window.gameReady = () => {
   $readyBtn.style.display = 'none';
+  window.isNotEndGame = true;
   clearBoard();
   words.length = 0;
   window.myScore = 0;
