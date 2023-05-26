@@ -1,3 +1,7 @@
+import Stage from "./stage.js";
+import Block from "./block.js";
+import SHAPES from "./shapes.js";
+
 const $div = document.querySelector("#tetris")
 const $cvs = document.createElement("canvas");
 $cvs.width = 1000;
@@ -6,45 +10,10 @@ const ctx = $cvs.getContext('2d');
 $div.appendChild($cvs);
 const CELL_SIZE = 30;
 
-const cell = (i, j, color) =>{
-  ctx.fillStyle = color;
-  ctx.fillRect(CELL_SIZE*i,CELL_SIZE*j,CELL_SIZE,CELL_SIZE);
-  ctx.strokeStyle = '#fff';
-  ctx.strokeRect(CELL_SIZE*i,CELL_SIZE*j,CELL_SIZE,CELL_SIZE);
-}
+const s1= new Stage(ctx, {x:50,y:0}, 10, 20);
+s1.draw();
 
-// for(let j=0; j<20; j++){
-//   for(let i=0; i<10; i++){
-//     cell(i,j,'#444');
-//   }
-// }
-
-// const draw = () =>{
-//    console.log("전역 함수")
-// }
-
-class Cell {
-  constructor(size, color){
-    this.size = size;
-    this.color = color;
-  }
-  
-  draw(pos={x, y}){
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pos.x, pos.y, this.size, this.size);
-    ctx.strokeStyle = '#fff';
-    ctx.strokeRect(pos.x, pos.y, this.size, this.size);  
-  }
-}
-
-const c = new Cell(30, '#444');
-c.draw({x:0,y:0});
+const b = new Block(SHAPES['I'], {i:0, j:2});
+console.log(b);
 
 
-
-
-
-// const d = new Cell("yellow");
-
-// c.draw2();
-// d.draw2();
