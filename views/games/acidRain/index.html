@@ -7,7 +7,7 @@
     {% if user %}
       <canvas class="border-solid border-2 border-white-300" id="board"></canvas>
     {% else %}
-      <p class="p-5 text-white">로그인 하세요.</p>
+      <p class="pt-10 pl-20 text-white">로그인 하세요.</p>
     {% endif %}
   </div>
   <div class="p-2 h-auto border-black bg-slate-300 col-span-1">
@@ -25,7 +25,7 @@
   </div>
 </div>
 {% if user %}
-  <script src="/static/scripts/acid_rain.js" type="module"></script>
+  <script src="/static/scripts/acid_rain/acid_rain.js" type="module"></script>
 {% endif %}
 
 {% endblock %}

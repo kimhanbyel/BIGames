@@ -4,8 +4,8 @@ import ScoreBoard from './scoreBoard.js';
 import TimeBar from './timeBar.js';
 import { BASIC_FONT_STYLE, COUNT_DOWN_FONT_STYLE } from './global_variable.js';
 
-const ws = new WebSocket("ws://10.94.121.10:3001");
-//const ws = new WebSocket("ws://localhost:3001");
+//const ws = new WebSocket("ws://10.94.121.10:3001");
+const ws = new WebSocket("ws://localhost:3001");
 const $myNick = document.querySelector('#myNick');
 const $myMsg = document.querySelector('#myMsg');
 const $chatLog = document.querySelector('#chat-log');

@@ -59,12 +59,12 @@ const functionByMsgCode = {
     data.score = 0;
 
     if(isExistNick(data.nick).length > 0){
-      data.players = wss.players;
+      data.players = wss.players.map(p=>{ return { nick : p.nick, color : p.color, score : p.score }});
       return;
     }
 
-    wss.players.push({nick : data.nick, color : data.color, score : data.score, })
-    data.players = wss.players;
+    wss.players.push({ ws : ws, nick : data.nick, color : data.color, score : data.score, })
+    data.players = wss.players.map(p=>{ return { nick : p.nick, color : p.color, score : p.score }});
     wss.readyCnt++;   
 
     bangJangPick();
@@ -109,9 +109,12 @@ wss.on("connection", (ws) =>{
       bangJangPick();
     }
 
-//    wss.players = wss.players.filter(p => { if(p.ws != ws) return p; })
-//    wss.players.map(p => p.send(JSON.stringify({code : 'ready', players : wss.players})));
-  
+    wss.players = wss.players.filter(p => { if(p.ws != ws) return p; })
+    
+    for(client of wss.clients){
+      client.send(JSON.stringify({code : 'ready', players : wss.players.map(p=>{ return { nick : p.nick, color : p.color, score : p.score }})}));
+    }
+   
     if(wss.clients.size) return;  
 
     clearInterval(wss.timer);
