@@ -117,4 +117,6 @@ const SHAPES = {
 				],      
 }
 
-export default SHAPES;
+const randowShape = () => SHAPES[Object.keys(SHAPES)[Math.floor(Math.random()*Object.keys(SHAPES).length)]];
+
+export default randomShape;
