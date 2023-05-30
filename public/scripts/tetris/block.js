@@ -7,7 +7,9 @@ class Block {
     this.coord = coord;
   }
   draw(ctx){
-    this.shapes[0]
+    this.shapes[0].map((row, j) => row.map((cell, i) => {
+      if(cell) cell.draw(ctx, {x:(i+this.coord.i)*CELL_SIZE, y:(j+this.coord.j)*CELL_SIZE});
+    }))
   }
 }
 

@@ -10,10 +10,11 @@ $cvs.height = CANVAS_HEIGHT;
 const ctx = $cvs.getContext('2d');
 $div.appendChild($cvs);
 
-const s1 = new Stage({x:50,y:0}, 10, 20);
+const s1 = new Stage({x:0,y:0}, 10, 20);
 s1.draw(ctx);
 
 const b = new Block(randomShape(), {i:0, j:2});
+b.draw(ctx);
 console.log(b);
 
 
